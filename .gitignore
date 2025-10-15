@@ -9,3 +9,6 @@ models/
 *.pickle
 data/*.csv
 .DS_Store
+
+#delete notebooks
+*.ipynb linguist-vendored

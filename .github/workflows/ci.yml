@@ -1,7 +1,6 @@
 # -------------------------------------------------------------
-# CI Workflow para o projeto Fraud Detector MVP
-# Corrige o caminho duplicado do GitHub Actions
-# e adiciona PYTHONPATH para localizar o módulo src
+# CI Workflow - Fraud Detector MVP
+# Corrige o caminho duplicado e configura o PYTHONPATH
 # -------------------------------------------------------------
 
   name: CI
@@ -34,12 +33,11 @@
           pip install -r requirements.txt
           pip install pytest pyarrow fastparquet xgboost scikit-learn matplotlib joblib pandas fastapi uvicorn
   
-      # 4️⃣ Rodar o pipeline dentro da pasta correta
-      # GitHub cria o diretório: /home/runner/work/fraud-detector-mvp/fraud-detector-mvp
-      # Por isso fazemos o cd e configuramos o PYTHONPATH
+      # 4️⃣ Geração de dados e features
+      # ⚙️ Aqui usamos export PYTHONPATH=$PYTHONPATH:$(pwd)
+      # para que o Python reconheça o pacote src em qualquer runner.
       - name: Run data generation
         run: |
-          cd fraud-detector-mvp
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           python src/data/synth_data.py
           python src/data/make_dataset.py
@@ -48,21 +46,19 @@
       # 5️⃣ Treinamento do modelo
       - name: Train model
         run: |
-          cd fraud-detector-mvp
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           python src/models/train_supervised.py
   
-      # 6️⃣ Testes
+      # 6️⃣ Testes unitários
       - name: Run tests
         run: |
-          cd fraud-detector-mvp
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           pytest -q --maxfail=1 --disable-warnings
   
-      # 7️⃣ Upload dos artefatos (modelo, métricas e gráficos)
-      - name: Upload artifacts (optional)
+      # 7️⃣ Upload opcional de artefatos (modelo e métricas)
+      - name: Upload artifacts
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: model-artifacts
-          path: fraud-detector-mvp/artifacts/
+          path: artifacts/

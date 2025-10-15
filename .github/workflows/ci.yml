@@ -1,23 +1,21 @@
 # -------------------------------------------------------------
 # CI/CD Workflow - Fraud Detector MVP
-# Pipeline completo com cache, testes, validação e integração
-# Corrigido para compatibilidade total no GitHub Actions
+# Pipeline completo e funcional (sem erros de indentação)
 # -------------------------------------------------------------
 
-  name: CI/CD Pipeline
+name: CI/CD Pipeline
 
-  on:
-    push:
-      branches: [ "main", "develop" ]
-    pull_request:
-      branches: [ "main" ]
-    workflow_dispatch:
-  
-  env:
-    PYTHONPATH: ${{ github.workspace }}
-  
-  jobs:
-    # 🔍 Validação de código e linting
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  PYTHONPATH: ${{ github.workspace }}
+
+jobs:
     lint:
       name: Code Quality
       runs-on: ubuntu-latest
@@ -52,13 +50,12 @@
             flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
             flake8 src/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
   
-        - name: Check code formatting with black
+        - name: Check formatting with black
           run: black --check src/ tests/
   
-        - name: Check import sorting with isort
+        - name: Check imports with isort
           run: isort --check-only src/ tests/
   
-    # 🧪 Testes em múltiplas versões do Python
     test:
       name: Tests (Python ${{ matrix.python-version }})
       runs-on: ubuntu-latest
@@ -68,12 +65,11 @@
       strategy:
         matrix:
           python-version: ['3.10', '3.11', '3.12']
-      
       steps:
         - name: Checkout code
           uses: actions/checkout@v4
   
-        - name: Set up Python ${{ matrix.python-version }}
+        - name: Set up Python
           uses: actions/setup-python@v5
           with:
             python-version: ${{ matrix.python-version }}
@@ -109,14 +105,13 @@
             export PYTHONPATH=$PYTHONPATH:$(pwd)
             pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=70
   
-        - name: Upload coverage reports
+        - name: Upload coverage report
           uses: codecov/codecov-action@v4
           with:
             file: ./coverage.xml
             flags: unittests
             name: codecov-umbrella
   
-    # 🤖 Treinamento e validação do modelo
     train:
       name: Model Training & Validation
       runs-on: ubuntu-latest
@@ -124,7 +119,6 @@
       defaults:
         run:
           working-directory: ./
-      
       steps:
         - name: Checkout code
           uses: actions/checkout@v4
@@ -174,27 +168,26 @@
           run: |
             if [ -f artifacts/metrics.json ]; then
               python - <<'EOF'
-  import json
-  with open('artifacts/metrics.json') as f:
-      metrics = json.load(f)
-  auprc = metrics.get('auprc', 0)
-  precision = metrics.get('precision_at_1pct', 0)
-  assert auprc > 0.7, f"AUPRC muito baixo: {auprc}"
-  assert precision > 0.3, f"Precision@1% muito baixo: {precision}"
-  print("✅ Métricas dentro dos limites aceitáveis")
-  EOF
-            else
-              echo "⚠️ Arquivo de métricas não encontrado, pulando validação"
-            fi
+            import json
+            with open('artifacts/metrics.json') as f:
+                metrics = json.load(f)
+            auprc = metrics.get('auprc', 0)
+            precision = metrics.get('precision_at_1pct', 0)
+            assert auprc > 0.7, f"AUPRC muito baixo: {auprc}"
+            assert precision > 0.3, f"Precision@1% muito baixo: {precision}"
+            print("✅ Métricas dentro dos limites aceitáveis")
+            EOF
+                      else
+                        echo "⚠️ Arquivo de métricas não encontrado, pulando validação"
+                      fi
+            
+                  - name: Upload model artifacts
+                    uses: actions/upload-artifact@v4
+                    with:
+                      name: model-artifacts-${{ github.sha }}
+                      path: artifacts/
+                      retention-days: 30
   
-        - name: Upload model artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: model-artifacts-${{ github.sha }}
-            path: artifacts/
-            retention-days: 30
-  
-    # 🚀 Teste da API
     api-test:
       name: API Integration Tests
       runs-on: ubuntu-latest
@@ -202,7 +195,6 @@
       defaults:
         run:
           working-directory: ./
-      
       steps:
         - name: Checkout code
           uses: actions/checkout@v4
@@ -237,7 +229,6 @@
               -H "Content-Type: application/json" \
               -d '{"Amount": 100.0, "V1":0,"V2":0,"V3":0,"V4":0,"V5":0,"V6":0,"V7":0,"V8":0,"V9":0,"V10":0,"V11":0,"V12":0,"V13":0,"V14":0,"V15":0,"V16":0,"V17":0,"V18":0,"V19":0,"V20":0,"V21":0,"V22":0,"V23":0,"V24":0,"V25":0,"V26":0,"V27":0,"V28":0}' || exit 1
   
-    # 📊 Relatório final
     report:
       name: Pipeline Report
       runs-on: ubuntu-latest
@@ -246,7 +237,6 @@
       defaults:
         run:
           working-directory: ./
-      
       steps:
         - name: Pipeline Status
           run: |

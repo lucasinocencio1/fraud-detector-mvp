@@ -1,45 +1,71 @@
-name: CI
+# -------------------------------------------------------------
+# CI Workflow para o projeto Fraud Detector MVP
+# Este pipeline automatiza:
+#   1. Instalação das dependências
+#   2. Geração e preparação dos dados
+#   3. Treinamento do modelo
+#   4. Execução de testes
+#   5. Upload dos artefatos (modelo e métricas)
+# -------------------------------------------------------------
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  name: CI
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pyarrow fastparquet xgboost scikit-learn matplotlib joblib pandas fastapi uvicorn
-
-    - name: Run data generation
-      run: |
-        python src/data/synth_data.py
-        python src/data/make_dataset.py
-        python src/data/feature_build.py
-
-    - name: Train model
-      run: python src/models/train_supervised.py
-
-    - name: Run tests
-      run: pytest -q --maxfail=1 --disable-warnings
-
-    - name: Upload artifacts (optional)
-      if: success()
-      uses: actions/upload-artifact@v4
-      with:
-        name: model-artifacts
-        path: artifacts/
+  on:
+    push:
+      branches: [ "main" ]        # Roda a cada push na branch main
+    pull_request:
+      branches: [ "main" ]        # Roda também para PRs na main
+  
+  jobs:
+    build:
+      runs-on: ubuntu-latest       # Runner padrão do GitHub Actions
+  
+      steps:
+      # 1️⃣ Clonar o repositório
+      - name: Checkout repo
+        uses: actions/checkout@v4
+  
+      # 2️⃣ Configurar o Python (ajuste de versão conforme projeto)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+  
+      # 3️⃣ Instalar dependências
+      #    Inclui bibliotecas que podem não estar no requirements.txt,
+      #    mas são necessárias no pipeline (pytest, pyarrow, fastparquet, etc.)
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pyarrow fastparquet xgboost scikit-learn matplotlib joblib pandas fastapi uvicorn
+  
+      # 4️⃣ Geração dos dados e features
+      #     Aqui adicionamos o export PYTHONPATH para corrigir o erro:
+      #    "ModuleNotFoundError: No module named 'src'"
+      - name: Run data generation
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          python src/data/synth_data.py
+          python src/data/make_dataset.py
+          python src/data/feature_build.py
+  
+      # 5️⃣ Treinamento do modelo
+      - name: Train model
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          python src/models/train_supervised.py
+  
+      # 6️⃣ Rodar testes automatizados (pytest)
+      - name: Run tests
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          pytest -q --maxfail=1 --disable-warnings
+  
+      # 7️⃣ Upload opcional dos artefatos (modelo, métricas e gráficos)
+      - name: Upload artifacts (optional)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-artifacts
+          path: artifacts/

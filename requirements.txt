@@ -29,3 +29,9 @@ flake8
 black
 isort
 mypy
+
+# Linting quality
+black==24.10.0
+isort==5.13.2
+flake8==7.1.0
+mypy==1.10.0

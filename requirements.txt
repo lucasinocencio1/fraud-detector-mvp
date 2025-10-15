@@ -1,15 +1,31 @@
+# Core ML dependencies
 numpy
 pandas
 scikit-learn
 xgboost
+joblib
+pyarrow
+
+# API dependencies
 fastapi
 uvicorn
 pydantic
-joblib
+httpx
+
+# Data validation
 pandera
+
+# Testing
 pytest
-pyarrow
+pytest-cov
+
+# Visualization
 jupyter
 matplotlib
 seaborn
-httpx
+
+# Development tools (optional)
+flake8
+black
+isort
+mypy

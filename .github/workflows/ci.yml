@@ -1,16 +1,45 @@
+name: CI
 
-name: ci
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    - run: pip install -U pip
-    - run: pip install -r requirements.txt
-    - run: make data features
-    - run: make train_sup
-    - run: make test
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pyarrow fastparquet xgboost scikit-learn matplotlib joblib pandas fastapi uvicorn
+
+    - name: Run data generation
+      run: |
+        python src/data/synth_data.py
+        python src/data/make_dataset.py
+        python src/data/feature_build.py
+
+    - name: Train model
+      run: python src/models/train_supervised.py
+
+    - name: Run tests
+      run: pytest -q --maxfail=1 --disable-warnings
+
+    - name: Upload artifacts (optional)
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: model-artifacts
+        path: artifacts/

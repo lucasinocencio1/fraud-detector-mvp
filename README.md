@@ -45,6 +45,9 @@ make test
 
 # Iniciar API
 make serve
+
+# Enviar dados para cliente (opcional)
+python src/data/push_to_supabase.py
 ```
 
 ### 3. Testar API
@@ -136,6 +139,60 @@ Em detecção de fraude, **accuracy baixo é esperado** porque:
 - **Pandas**: Manipulação de dados
 - **NumPy**: Computação numérica
 
+### 📊 Armazenamento e Integração
+- **Supabase**: Banco de dados PostgreSQL em nuvem
+- **Integração Cliente**: Upload automático de dados para cliente hipotético
+- **Schema Sync**: Sincronização automática de estrutura de tabelas
+- **Batch Upload**: Envio eficiente de dados em lotes
+
+
+## 🔗 Integração com Cliente (Supabase)
+
+### 📤 Upload Automático de Dados
+```bash
+# Enviar dados para cliente hipotético
+python src/data/push_to_supabase.py
+```
+
+### 🎯 Funcionalidades de Integração
+- **🔄 Sincronização de Schema**: Criação automática de tabelas e colunas
+- **📊 Upload em Batch**: Envio eficiente de 250k+ transações
+- **🔗 Relacionamento**: Vinculação automática customers ↔ transactions
+- **🛡️ Tratamento de Erros**: Robustez contra colunas duplicadas
+- **📈 Monitoramento**: Logs detalhados do processo de upload
+
+### 🏗️ Estrutura no Supabase
+```sql
+-- Tabela de Clientes
+customers (
+  customer_id UUID PRIMARY KEY,
+  name TEXT,
+  email TEXT,
+  age INTEGER,
+  city TEXT,
+  state TEXT,
+  country TEXT
+)
+
+-- Tabela de Transações  
+transactions (
+  transaction_id UUID PRIMARY KEY,
+  customer_id UUID REFERENCES customers(customer_id),
+  amount DECIMAL,
+  time TIMESTAMP,
+  v1-v28 DECIMAL,  -- Features PCA
+  class INTEGER,   -- 0=Normal, 1=Fraude
+  is_night BOOLEAN
+)
+```
+
+### ⚙️ Configuração
+```bash
+# Variáveis de ambiente necessárias
+export SUPABASE_URL="sua-url-supabase"
+export SUPABASE_KEY="sua-chave-supabase"
+```
+
 ## 🚀 CI/CD Pipeline
 
 O projeto inclui um pipeline CI/CD robusto com:
@@ -156,6 +213,8 @@ O projeto inclui um pipeline CI/CD robusto com:
 - [ ] **Dashboard**: Interface web com Streamlit
 - [ ] **Deploy**: Containerização com Docker
 - [ ] **Alertas**: Notificações em tempo real
+- [ ] **Integração Avançada**: Webhooks para notificações de fraude
+- [ ] **Dashboard Cliente**: Interface para visualização de métricas
 
 ### 🔮 Funcionalidades Avançadas
 - [ ] **Modelo Incremental**: Treinamento online

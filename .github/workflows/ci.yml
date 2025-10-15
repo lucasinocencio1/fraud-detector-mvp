@@ -1,64 +1,265 @@
 # -------------------------------------------------------------
-# CI Workflow - Fraud Detector MVP
-# Corrige o caminho duplicado e configura o PYTHONPATH
+# CI/CD Workflow - Fraud Detector MVP
+# Pipeline completo com cache, testes, validação e integração
+# Corrigido para compatibilidade total no GitHub Actions
 # -------------------------------------------------------------
 
-  name: CI
+  name: CI/CD Pipeline
 
   on:
     push:
-      branches: [ "main" ]
+      branches: [ "main", "develop" ]
     pull_request:
       branches: [ "main" ]
+    workflow_dispatch:
+  
+  env:
+    PYTHONPATH: ${{ github.workspace }}
   
   jobs:
-    build:
+    # 🔍 Validação de código e linting
+    lint:
+      name: Code Quality
       runs-on: ubuntu-latest
-  
+      defaults:
+        run:
+          working-directory: ./
       steps:
-      # 1️⃣ Clonar o repositório
-      - name: Checkout repo
-        uses: actions/checkout@v4
+        - name: Checkout code
+          uses: actions/checkout@v4
   
-      # 2️⃣ Configurar Python
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.11'
   
-      # 3️⃣ Instalar dependências
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pyarrow fastparquet xgboost scikit-learn matplotlib joblib pandas fastapi uvicorn
+        - name: Cache pip dependencies
+          uses: actions/cache@v4
+          with:
+            path: ~/.cache/pip
+            key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+            restore-keys: |
+              ${{ runner.os }}-pip-
   
-      # 4️⃣ Geração de dados e features
-      # ⚙️ Aqui usamos export PYTHONPATH=$PYTHONPATH:$(pwd)
-      # para que o Python reconheça o pacote src em qualquer runner.
-      - name: Run data generation
-        run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)
-          python src/data/synth_data.py
-          python src/data/make_dataset.py
-          python src/data/feature_build.py
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install flake8 black isort mypy
   
-      # 5️⃣ Treinamento do modelo
-      - name: Train model
-        run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)
-          python src/models/train_supervised.py
+        - name: Lint with flake8
+          run: |
+            flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+            flake8 src/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
   
-      # 6️⃣ Testes unitários
-      - name: Run tests
-        run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)
-          pytest -q --maxfail=1 --disable-warnings
+        - name: Check code formatting with black
+          run: black --check src/ tests/
   
-      # 7️⃣ Upload opcional de artefatos (modelo e métricas)
-      - name: Upload artifacts
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: model-artifacts
-          path: artifacts/
+        - name: Check import sorting with isort
+          run: isort --check-only src/ tests/
+  
+    # 🧪 Testes em múltiplas versões do Python
+    test:
+      name: Tests (Python ${{ matrix.python-version }})
+      runs-on: ubuntu-latest
+      defaults:
+        run:
+          working-directory: ./
+      strategy:
+        matrix:
+          python-version: ['3.10', '3.11', '3.12']
+      
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+  
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v5
+          with:
+            python-version: ${{ matrix.python-version }}
+  
+        - name: Cache pip dependencies
+          uses: actions/cache@v4
+          with:
+            path: ~/.cache/pip
+            key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+            restore-keys: |
+              ${{ runner.os }}-pip-${{ matrix.python-version }}-
+              ${{ runner.os }}-pip-
+  
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install pytest coverage pyarrow fastparquet xgboost scikit-learn joblib pandas fastapi uvicorn
+  
+        - name: Generate synthetic data
+          run: |
+            export PYTHONPATH=$PYTHONPATH:$(pwd)
+            python src/data/synth_data.py
+            python src/data/make_dataset.py
+  
+        - name: Build features
+          run: |
+            export PYTHONPATH=$PYTHONPATH:$(pwd)
+            python src/data/feature_build.py
+  
+        - name: Run tests
+          run: |
+            export PYTHONPATH=$PYTHONPATH:$(pwd)
+            pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=70
+  
+        - name: Upload coverage reports
+          uses: codecov/codecov-action@v4
+          with:
+            file: ./coverage.xml
+            flags: unittests
+            name: codecov-umbrella
+  
+    # 🤖 Treinamento e validação do modelo
+    train:
+      name: Model Training & Validation
+      runs-on: ubuntu-latest
+      needs: [lint, test]
+      defaults:
+        run:
+          working-directory: ./
+      
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+  
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.11'
+  
+        - name: Cache pip dependencies
+          uses: actions/cache@v4
+          with:
+            path: ~/.cache/pip
+            key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+            restore-keys: |
+              ${{ runner.os }}-pip-
+  
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install pyarrow fastparquet xgboost scikit-learn joblib pandas fastapi uvicorn
+  
+        - name: Generate data and features
+          run: |
+            export PYTHONPATH=$PYTHONPATH:$(pwd)
+            python src/data/synth_data.py
+            python src/data/make_dataset.py
+            python src/data/feature_build.py
+  
+        - name: Train supervised model
+          run: |
+            export PYTHONPATH=$PYTHONPATH:$(pwd)
+            python src/models/train_supervised.py
+  
+        - name: Train unsupervised model
+          run: |
+            export PYTHONPATH=$PYTHONPATH:$(pwd)
+            python src/models/train_unsupervised.py
+  
+        - name: Evaluate models
+          run: |
+            export PYTHONPATH=$PYTHONPATH:$(pwd)
+            python src/models/evaluate.py
+  
+        - name: Validate model performance
+          run: |
+            if [ -f artifacts/metrics.json ]; then
+              python - <<'EOF'
+  import json
+  with open('artifacts/metrics.json') as f:
+      metrics = json.load(f)
+  auprc = metrics.get('auprc', 0)
+  precision = metrics.get('precision_at_1pct', 0)
+  assert auprc > 0.7, f"AUPRC muito baixo: {auprc}"
+  assert precision > 0.3, f"Precision@1% muito baixo: {precision}"
+  print("✅ Métricas dentro dos limites aceitáveis")
+  EOF
+            else
+              echo "⚠️ Arquivo de métricas não encontrado, pulando validação"
+            fi
+  
+        - name: Upload model artifacts
+          uses: actions/upload-artifact@v4
+          with:
+            name: model-artifacts-${{ github.sha }}
+            path: artifacts/
+            retention-days: 30
+  
+    # 🚀 Teste da API
+    api-test:
+      name: API Integration Tests
+      runs-on: ubuntu-latest
+      needs: [train]
+      defaults:
+        run:
+          working-directory: ./
+      
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+  
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.11'
+  
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install fastapi uvicorn httpx
+  
+        - name: Download model artifacts
+          uses: actions/download-artifact@v4
+          with:
+            name: model-artifacts-${{ github.sha }}
+            path: artifacts/
+  
+        - name: Start API server
+          run: |
+            export PYTHONPATH=$PYTHONPATH:$(pwd)
+            uvicorn src.serve.api:app --host 0.0.0.0 --port 8000 &
+            sleep 15
+  
+        - name: Test API endpoints
+          run: |
+            curl -f http://localhost:8000/health || exit 1
+            curl -X POST http://localhost:8000/predict \
+              -H "Content-Type: application/json" \
+              -d '{"Amount": 100.0, "V1":0,"V2":0,"V3":0,"V4":0,"V5":0,"V6":0,"V7":0,"V8":0,"V9":0,"V10":0,"V11":0,"V12":0,"V13":0,"V14":0,"V15":0,"V16":0,"V17":0,"V18":0,"V19":0,"V20":0,"V21":0,"V22":0,"V23":0,"V24":0,"V25":0,"V26":0,"V27":0,"V28":0}' || exit 1
+  
+    # 📊 Relatório final
+    report:
+      name: Pipeline Report
+      runs-on: ubuntu-latest
+      needs: [lint, test, train, api-test]
+      if: always()
+      defaults:
+        run:
+          working-directory: ./
+      
+      steps:
+        - name: Pipeline Status
+          run: |
+            echo "🔍 Lint: ${{ needs.lint.result }}"
+            echo "🧪 Tests: ${{ needs.test.result }}"
+            echo "🤖 Training: ${{ needs.train.result }}"
+            echo "🚀 API Tests: ${{ needs.api-test.result }}"
+            if [[ "${{ needs.lint.result }}" == "success" && \
+                  "${{ needs.test.result }}" == "success" && \
+                  "${{ needs.train.result }}" == "success" && \
+                  "${{ needs.api-test.result }}" == "success" ]]; then
+              echo "✅ Pipeline executado com sucesso!"
+            else
+              echo "❌ Pipeline falhou em uma ou mais etapas"
+              exit 1
+            fi

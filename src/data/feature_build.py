@@ -1,45 +1,42 @@
-import os
+"""
+src/data/feature_build.py
 
-import numpy as np
+Gera features agregadas (estatísticas por região e categoria),
+mantendo compatibilidade com o novo dataset sintético.
+"""
+
 import pandas as pd
+from pathlib import Path
 
-os.makedirs("artifacts", exist_ok=True)
+# Caminhos
+DATA_DIR = Path("artifacts")
 
-splits = ["train", "val", "test"]
+# Carregar splits
+train = pd.read_parquet(DATA_DIR / "train.parquet")
+val = pd.read_parquet(DATA_DIR / "val.parquet")
+test = pd.read_parquet(DATA_DIR / "test.parquet")
 
-for split in splits:
-    df = pd.read_parquet(f"artifacts/{split}.parquet")
+# Garantir colunas numéricas corretas
+if "Amount" in train.columns:
+    train.rename(columns={"Amount": "amount"}, inplace=True)
+    val.rename(columns={"Amount": "amount"}, inplace=True)
+    test.rename(columns={"Amount": "amount"}, inplace=True)
 
-    # Feature: horário noturno
-    df["hour_is_night"] = df["transaction_hour"].isin([0, 1, 2, 3, 4, 5]).astype(int)
+# Features agregadas por região e categoria
+region_stats = train.groupby("region")["amount"].agg(["mean", "std"]).reset_index()
+region_stats.columns = ["region", "region_amount_mean", "region_amount_std"]
 
-    # Estatísticas por região
-    region_stats = (
-        df.groupby("region")["Amount"]
-        .agg(["mean", "std"])
-        .rename(columns={"mean": "region_amount_mean", "std": "region_amount_std"})
-        .reset_index()
-    )
-    df = df.merge(region_stats, on="region", how="left")
+cat_stats = train.groupby("merchant_category")["amount"].agg(["mean", "std"]).reset_index()
+cat_stats.columns = ["merchant_category", "cat_amount_mean", "cat_amount_std"]
 
-    # Estatísticas por categoria de comerciante
-    mc_stats = (
-        df.groupby("merchant_category")["Amount"]
-        .agg(["mean", "std"])
-        .rename(columns={"mean": "mc_amount_mean", "std": "mc_amount_std"})
-        .reset_index()
-    )
-    df = df.merge(mc_stats, on="merchant_category", how="left")
+# Merge nos datasets
+for df in [train, val, test]:
+    df.merge(region_stats, on="region", how="left")
+    df.merge(cat_stats, on="merchant_category", how="left")
 
-    # Features derivadas de Amount
-    df["Amount_log1p"] = np.log1p(df["Amount"])
-    df["Amount_z"] = (df["Amount"] - df["Amount"].mean()) / (df["Amount"].std() + 1e-9)
-    df["Amount_log1p_z"] = (df["Amount_log1p"] - df["Amount_log1p"].mean()) / (
-        df["Amount_log1p"].std() + 1e-9
-    )
+# Salvar resultados
+train.to_parquet("data/train_feat.parquet", index=False)
+val.to_parquet("data/val_feat.parquet", index=False)
+test.to_parquet("data/test_feat.parquet", index=False)
 
-    # Preencher NaN e salvar
-    df.fillna(0, inplace=True)
-    df.to_parquet(f"artifacts/{split}_feat.parquet", index=False)
-
-print("Features geradas e salvas: train_feat, val_feat, test_feat")
+print("✅ Features geradas e salvas: train_feat, val_feat, test_feat")

@@ -1,0 +1,10 @@
+
+__pycache__/
+.pytest_cache/
+.venv/
+artifacts/
+models/
+*.joblib
+*.parquet
+*.pickle
+data/*.csv

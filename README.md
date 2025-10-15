@@ -85,11 +85,17 @@ curl -X POST http://127.0.0.1:8000/predict \
 - `merchant_category`: Categoria do comerciante (groceries/electronics/etc)
 
 **🟡 Opcionais (padrão 0):**
-- `V1-V28`: Features PCA (float)
+- `V1-V28`: Features PCA originais (28 features de componentes principais)
 - `Amount_log1p`, `Amount_z`, `Amount_log1p_z`: Features derivadas
 - `hour_is_night`: Flag de horário noturno
 - `region_amount_mean/std`: Estatísticas por região
 - `mc_amount_mean/std`: Estatísticas por categoria
+
+**📊 Modelo Híbrido:**
+O modelo usa **49 features** combinando:
+- ✅ **Features PCA** (V1-V28): Componentes principais para padrões ocultos
+- ✅ **Features Reais**: Variáveis interpretáveis (Amount, region, etc.)
+- ✅ **Features Derivadas**: Estatísticas e transformações automáticas
 
 ## 📁 Estrutura do Projeto
 

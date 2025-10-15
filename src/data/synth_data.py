@@ -1,12 +1,21 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
 
 RNG = np.random.default_rng(42)
 
 REGIONS = ["EU", "US", "BR", "ASIA"]
 DEVICE_TYPES = ["mobile", "desktop"]
-MERCHANT_CATS = ["electronics", "groceries", "fashion", "gaming", "travel", "restaurants"]
+MERCHANT_CATS = [
+    "electronics",
+    "groceries",
+    "fashion",
+    "gaming",
+    "travel",
+    "restaurants",
+]
+
 
 def gen_transactions(n=250_000, fraud_rate=0.012, start_time=0):
     """
@@ -23,8 +32,9 @@ def gen_transactions(n=250_000, fraud_rate=0.012, start_time=0):
     # variáveis categóricas
     region = RNG.choice(REGIONS, size=n, p=[0.45, 0.25, 0.15, 0.15])
     device_type = RNG.choice(DEVICE_TYPES, size=n, p=[0.65, 0.35])
-    merchant_category = RNG.choice(MERCHANT_CATS, size=n,
-                                   p=[0.20, 0.20, 0.15, 0.15, 0.15, 0.15])
+    merchant_category = RNG.choice(
+        MERCHANT_CATS, size=n, p=[0.20, 0.20, 0.15, 0.15, 0.15, 0.15]
+    )
 
     # hora da transação (madrugada terá maior chance de fraude)
     transaction_hour = RNG.integers(0, 24, size=n)
@@ -66,6 +76,7 @@ def gen_transactions(n=250_000, fraud_rate=0.012, start_time=0):
     df["transaction_hour"] = transaction_hour
 
     return df
+
 
 if __name__ == "__main__":
     df = gen_transactions()

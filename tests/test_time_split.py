@@ -1,6 +1,7 @@
-
 import pandas as pd
+
 from src.utils.time_split import time_split
+
 
 def test_time_split_is_temporal_and_disjoint():
     df = pd.DataFrame({"Time": range(100)})

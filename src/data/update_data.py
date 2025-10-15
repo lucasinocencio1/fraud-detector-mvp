@@ -1,6 +1,9 @@
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
+
 from src.data.synth_data import gen_transactions
+
 
 def update_transactions(batch=50_000):
     """
@@ -19,6 +22,7 @@ def update_transactions(batch=50_000):
         df_new = gen_transactions(n=batch, start_time=0)
         df_new.to_csv(master, index=False)
         print(f"Criado: data/transactions.csv com {len(df_new)} linhas")
+
 
 if __name__ == "__main__":
     update_transactions()

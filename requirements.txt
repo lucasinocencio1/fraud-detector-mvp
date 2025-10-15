@@ -1,4 +1,3 @@
-
 numpy
 pandas
 scikit-learn
@@ -10,3 +9,7 @@ joblib
 pandera
 pytest
 pyarrow
+jupyter
+matplotlib
+seaborn
+httpx

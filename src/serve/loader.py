@@ -1,4 +1,3 @@
-
 import joblib
 ART_SUP = "artifacts/supervised_xgb.joblib"
 

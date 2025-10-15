@@ -10,5 +10,7 @@ models/
 data/*.csv
 .DS_Store
 
-#delete notebooks
-*.ipynb linguist-vendored
+# Notebooks privados
+notebooks/data_exploration.ipynb
+
+

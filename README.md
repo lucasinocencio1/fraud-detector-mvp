@@ -9,14 +9,16 @@ Um sistema **end-to-end** completo para detecção de fraudes em transações fi
 
 ## 🎯 Características Principais
 
-- 🔄 **Pipeline Completo**: Dados → Features → Modelo → API → Monitoramento
+- 🔄 **Pipeline Completo**: Dados → Features → Modelo → API → Alertas → Monitoramento
 - 🤖 **Múltiplos Algoritmos**: XGBoost (supervisionado) + IsolationForest (não-supervisionado)
 - 📊 **Dados Sintéticos Realistas**: 250k+ transações com padrões de fraude
 - 🚀 **API FastAPI**: Endpoints REST para predições em tempo real
+- 🚨 **Alertas WhatsApp**: Notificações automáticas de fraudes detectadas
 - 🧪 **CI/CD Robusto**: Testes automatizados, linting e validação
 - 📈 **Métricas Adequadas**: AUPRC, Precision@K, ROC-AUC para dados desbalanceados
 - 🔒 **Balanceamento Inteligente**: SMOTE + Undersampling híbrido
 - 📊 **Visualizações**: Notebooks de análise exploratória
+- 🔗 **Integração Supabase**: Upload automático para cliente
 
 ## 🚀 Quick Start
 
@@ -86,6 +88,9 @@ fraud-detector-mvp/
 │   ├── 🌐 serve/          # API REST
 │   │   ├── api.py             # Endpoints FastAPI
 │   │   └── loader.py          # Carregamento de modelos
+│   ├── 🚨 alerts/         # Sistema de alertas
+│   │   ├── fraud_alert.py     # Alertas via WhatsApp
+│   │   └── test_message.py    # Modo sandbox
 │   └── 🔧 utils/          # Utilitários
 │       ├── metrics.py          # Métricas customizadas
 │       ├── psi.py             # Monitoramento de drift
@@ -191,7 +196,45 @@ transactions (
 # Variáveis de ambiente necessárias
 export SUPABASE_URL="sua-url-supabase"
 export SUPABASE_KEY="sua-chave-supabase"
+
+# Para sistema de alertas (opcional)
+export ULTRAMSG_INSTANCE="sua-instancia-ultramsg"
+export ULTRAMSG_TOKEN="seu-token-ultramsg"
 ```
+
+## 🚨 Sistema de Alertas em Tempo Real
+
+### 📱 Notificações Automáticas
+```bash
+# Executar sistema de alertas
+python src/alerts/fraud_alert.py
+
+# Testar envio de mensagens (modo sandbox)
+python src/alerts/test_message.py
+```
+
+### 🎯 Funcionalidades do Sistema de Alertas
+- **🔍 Detecção Automática**: Monitora transações fraudulentas no Supabase
+- **📱 WhatsApp Integration**: Envia alertas via UltraMsg API
+- **👤 Mapeamento Cliente**: Vincula fraudes aos dados do cliente
+- **⚡ Tempo Real**: Notificações instantâneas de fraudes detectadas
+- **🛡️ Sandbox Mode**: Modo de teste sem envio real de mensagens
+
+### 📋 Exemplo de Alerta
+```
+⚠️ Alerta de possível fraude detectada!
+
+Cliente: João Silva
+Região: Lisboa
+Valor: €1,250.00
+Ação: Revisar transação no painel de risco.
+```
+
+### 🔧 Tecnologias de Alertas
+- **UltraMsg API**: Integração com WhatsApp Business
+- **Supabase**: Monitoramento de transações em tempo real
+- **Python Requests**: Comunicação com APIs externas
+- **Pandas**: Processamento de dados de fraude
 
 ## 🚀 CI/CD Pipeline
 

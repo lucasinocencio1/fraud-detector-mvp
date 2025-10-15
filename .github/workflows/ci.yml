@@ -1,50 +1,45 @@
 # -------------------------------------------------------------
 # CI Workflow para o projeto Fraud Detector MVP
-# Este pipeline automatiza:
-#   1. Instalação das dependências
-#   2. Geração e preparação dos dados
-#   3. Treinamento do modelo
-#   4. Execução de testes
-#   5. Upload dos artefatos (modelo e métricas)
+# Corrige o caminho duplicado do GitHub Actions
+# e adiciona PYTHONPATH para localizar o módulo src
 # -------------------------------------------------------------
 
   name: CI
 
   on:
     push:
-      branches: [ "main" ]        # Roda a cada push na branch main
+      branches: [ "main" ]
     pull_request:
-      branches: [ "main" ]        # Roda também para PRs na main
+      branches: [ "main" ]
   
   jobs:
     build:
-      runs-on: ubuntu-latest       # Runner padrão do GitHub Actions
+      runs-on: ubuntu-latest
   
       steps:
       # 1️⃣ Clonar o repositório
       - name: Checkout repo
         uses: actions/checkout@v4
   
-      # 2️⃣ Configurar o Python (ajuste de versão conforme projeto)
+      # 2️⃣ Configurar Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
   
       # 3️⃣ Instalar dependências
-      #    Inclui bibliotecas que podem não estar no requirements.txt,
-      #    mas são necessárias no pipeline (pytest, pyarrow, fastparquet, etc.)
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest pyarrow fastparquet xgboost scikit-learn matplotlib joblib pandas fastapi uvicorn
   
-      # 4️⃣ Geração dos dados e features
-      #     Aqui adicionamos o export PYTHONPATH para corrigir o erro:
-      #    "ModuleNotFoundError: No module named 'src'"
+      # 4️⃣ Rodar o pipeline dentro da pasta correta
+      # GitHub cria o diretório: /home/runner/work/fraud-detector-mvp/fraud-detector-mvp
+      # Por isso fazemos o cd e configuramos o PYTHONPATH
       - name: Run data generation
         run: |
+          cd fraud-detector-mvp
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           python src/data/synth_data.py
           python src/data/make_dataset.py
@@ -53,19 +48,21 @@
       # 5️⃣ Treinamento do modelo
       - name: Train model
         run: |
+          cd fraud-detector-mvp
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           python src/models/train_supervised.py
   
-      # 6️⃣ Rodar testes automatizados (pytest)
+      # 6️⃣ Testes
       - name: Run tests
         run: |
+          cd fraud-detector-mvp
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           pytest -q --maxfail=1 --disable-warnings
   
-      # 7️⃣ Upload opcional dos artefatos (modelo, métricas e gráficos)
+      # 7️⃣ Upload dos artefatos (modelo, métricas e gráficos)
       - name: Upload artifacts (optional)
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: model-artifacts
-          path: artifacts/
+          path: fraud-detector-mvp/artifacts/

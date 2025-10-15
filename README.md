@@ -62,6 +62,10 @@ curl -X POST http://127.0.0.1:8000/predict \
   -H "Content-Type: application/json" \
   -d '{
     "Amount": 150.75,
+    "transaction_hour": 14,
+    "region": "Lisboa",
+    "device_type": "mobile",
+    "merchant_category": "groceries",
     "V1": 0.5, "V2": -0.3, "V3": 1.2, "V4": -0.8, "V5": 0.1,
     "V6": -0.5, "V7": 0.8, "V8": -1.1, "V9": 0.3, "V10": -0.7,
     "V11": 0.9, "V12": -0.2, "V13": 0.6, "V14": -0.4, "V15": 0.7,
@@ -70,6 +74,22 @@ curl -X POST http://127.0.0.1:8000/predict \
     "V26": -0.7, "V27": 0.6, "V28": -0.4
   }'
 ```
+
+### 📋 Variáveis da API
+
+**🔴 Obrigatórias:**
+- `Amount`: Valor da transação (float)
+- `transaction_hour`: Hora da transação (0-23)
+- `region`: Região geográfica (string)
+- `device_type`: Tipo de dispositivo (mobile/desktop)
+- `merchant_category`: Categoria do comerciante (groceries/electronics/etc)
+
+**🟡 Opcionais (padrão 0):**
+- `V1-V28`: Features PCA (float)
+- `Amount_log1p`, `Amount_z`, `Amount_log1p_z`: Features derivadas
+- `hour_is_night`: Flag de horário noturno
+- `region_amount_mean/std`: Estatísticas por região
+- `mc_amount_mean/std`: Estatísticas por categoria
 
 ## 📁 Estrutura do Projeto
 

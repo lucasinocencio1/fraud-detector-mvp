@@ -9,6 +9,7 @@ models/
 *.pickle
 data/*.csv
 .DS_Store
+.json
 
 # Notebooks privados
 notebooks/data_exploration.ipynb

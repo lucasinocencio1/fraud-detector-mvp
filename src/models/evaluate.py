@@ -80,8 +80,16 @@ except FileNotFoundError as e:
 # ===============================
 # 3. Preparar dados
 # ===============================
+# Normalizar nome da coluna de target
+if "class" in X_val.columns:
+    X_val = X_val.rename(columns={"class": "Class"})
+
 y_val = X_val["Class"].astype(int)
 X_val = X_val.drop(columns=["Class"])
+
+# Remover colunas não numéricas (customer_id, etc)
+cols_to_drop = ["customer_id", "time"] if "customer_id" in X_val.columns else ["time"]
+X_val = X_val.drop(columns=[col for col in cols_to_drop if col in X_val.columns])
 
 for col in ["region", "device_type", "merchant_category"]:
     if col in X_val.columns:

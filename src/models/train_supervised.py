@@ -36,10 +36,21 @@ print(f"Treino: {train.shape}, Validação: {val.shape}")
 # ===============================
 # 2. Preparação dos dados
 # ===============================
+# Normalizar nome da coluna de target
+if "class" in train.columns:
+    train = train.rename(columns={"class": "Class"})
+if "class" in val.columns:
+    val = val.rename(columns={"class": "Class"})
+
 y_tr = train["Class"].astype(int)
 y_val = val["Class"].astype(int)
 X_tr = train.drop(columns=["Class"])
 X_val = val.drop(columns=["Class"])
+
+# Remover colunas não numéricas (customer_id, etc)
+cols_to_drop = ["customer_id", "time"] if "customer_id" in X_tr.columns else ["time"]
+X_tr = X_tr.drop(columns=[col for col in cols_to_drop if col in X_tr.columns])
+X_val = X_val.drop(columns=[col for col in cols_to_drop if col in X_val.columns])
 
 # Codificação de variáveis categóricas
 for col in ["region", "device_type", "merchant_category"]:
@@ -146,7 +157,7 @@ base_model = XGBClassifier(
 search = RandomizedSearchCV(
     base_model,
     param_dist,
-    n_iter=30,  # 30 iterações para velocidade
+    n_iter=10,  # 10 iterações para velocidade (30 fits)
     cv=3,
     scoring='average_precision',
     n_jobs=-1,

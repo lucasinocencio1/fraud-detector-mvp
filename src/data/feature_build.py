@@ -30,13 +30,18 @@ cat_stats = train.groupby("merchant_category")["amount"].agg(["mean", "std"]).re
 cat_stats.columns = ["merchant_category", "cat_amount_mean", "cat_amount_std"]
 
 # Merge nos datasets
-for df in [train, val, test]:
-    df.merge(region_stats, on="region", how="left")
-    df.merge(cat_stats, on="merchant_category", how="left")
+train = train.merge(region_stats, on="region", how="left")
+train = train.merge(cat_stats, on="merchant_category", how="left")
+
+val = val.merge(region_stats, on="region", how="left")
+val = val.merge(cat_stats, on="merchant_category", how="left")
+
+test = test.merge(region_stats, on="region", how="left")
+test = test.merge(cat_stats, on="merchant_category", how="left")
 
 # Salvar resultados
-train.to_parquet("data/train_feat.parquet", index=False)
-val.to_parquet("data/val_feat.parquet", index=False)
-test.to_parquet("data/test_feat.parquet", index=False)
+train.to_parquet(Path("artifacts") / "train_feat.parquet", index=False)
+val.to_parquet(Path("artifacts") / "val_feat.parquet", index=False)
+test.to_parquet(Path("artifacts") / "test_feat.parquet", index=False)
 
 print("✅ Features geradas e salvas: train_feat, val_feat, test_feat")

@@ -3,8 +3,10 @@ numpy
 pandas
 scikit-learn
 xgboost
+lightgbm
 joblib
 pyarrow
+imbalanced-learn
 
 # API dependencies
 fastapi

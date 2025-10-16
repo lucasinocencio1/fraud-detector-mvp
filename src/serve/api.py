@@ -77,7 +77,14 @@ def predict(tx: Tx):
     import pandas as pd
 
     Xdf = pd.DataFrame([row])
-    score = float(model.predict_proba(Xdf)[0, 1])
+    
+    # Ensemble prediction (XGBoost + LightGBM)
+    if model["type"] == "ensemble":
+        score_xgb = float(model["xgb"].predict_proba(Xdf)[0, 1])
+        score_lgbm = float(model["lgbm"].predict_proba(Xdf)[0, 1])
+        score = 0.6 * score_xgb + 0.4 * score_lgbm
+    else:
+        score = float(model.predict_proba(Xdf)[0, 1])
     return {"fraud_score": score}
 
 

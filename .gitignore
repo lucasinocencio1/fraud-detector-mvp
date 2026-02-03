@@ -1,17 +1,24 @@
-
 __pycache__/
 .pytest_cache/
 .venv/
+env/
 artifacts/
 models/
 *.joblib
 *.parquet
 *.pickle
 data/*.csv
+!data/sample_transactions.csv
+
+.env*
+
 .DS_Store
-.json
+*.log
+*.pyc
+*.json
 
-# Notebooks privados
 notebooks/data_exploration.ipynb
+.ipynb_checkpoints/
 
-
+.coverage
+htmlcov/

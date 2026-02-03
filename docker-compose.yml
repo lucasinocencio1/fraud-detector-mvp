@@ -9,7 +9,7 @@ services:
       - PYTHONPATH=/app
     volumes:
       - ./:/app
-    command: uvicorn src.serve.api:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn src.server.app:app --host 0.0.0.0 --port 8000 --reload
   trainer:
     build: .
     container_name: fraud_trainer
@@ -17,4 +17,7 @@ services:
       - PYTHONPATH=/app
     volumes:
       - ./:/app
-    command: sh -c "python src/data/update_data.py && python src/data/make_dataset.py && python src/data/feature_build.py && python src/models/train_supervised.py && tail -f /dev/null"
+    command: >
+      sh -c "python -m src.data.cli full-run --batch-path ${BATCH_PATH:-data/sample_transactions.csv}
+      && python src/models/train_supervised.py
+      && tail -f /dev/null"

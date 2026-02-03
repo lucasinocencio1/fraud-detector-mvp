@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.models.thresholding import opt_threshold_by_precision_at_k
+from src.utils.thresholding import opt_threshold_by_precision_at_k
 
 
 def test_precision_at_k_threshold_monotonic():

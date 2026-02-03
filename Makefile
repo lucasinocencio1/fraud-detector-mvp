@@ -1,21 +1,24 @@
 export PYTHONPATH := $(shell pwd)
 PYTHON := python3
 
-.PHONY: setup data update features train_sup train_unsup evaluate test serve retrain
+.PHONY: setup generate ingest data features train_sup evaluate test serve retrain
 
 setup:
 	$(PYTHON) -m venv .venv && . .venv/bin/activate && pip install -U pip && pip install -r requirements.txt
 
+generate:
+	$(PYTHON) -m src.data.gen_sample -n $(or $(ROWS),250000)
+
+ingest:
+	$(PYTHON) -m src.data.cli ingest $(or $(BATCH),data/sample_transactions.csv)
+
 data:
-	$(PYTHON) src/data/synth_data.py && $(PYTHON) src/data/make_dataset.py
+	$(PYTHON) -m src.data.cli split
 
-update:
-	$(PYTHON) src/data/update_data.py && $(PYTHON) src/data/make_dataset.py
+features: data
+	$(PYTHON) -m src.data.cli features
 
-features:
-	$(PYTHON) src/data/feature_build.py
-
-train_sup:
+train_sup: features
 	$(PYTHON) src/models/train_supervised.py
 
 evaluate:
@@ -25,7 +28,8 @@ test:
 	pytest -q --maxfail=1 --disable-warnings
 
 serve:
-	uvicorn src.serve.api:app --reload
+	uvicorn src.server.app:app --reload
 
 retrain:
-	$(PYTHON) src/data/update_data.py && $(PYTHON) src/data/make_dataset.py && $(PYTHON) src/data/feature_build.py && $(PYTHON) src/models/train_supervised.py
+	$(PYTHON) -m src.data.cli full-run --batch-path $(or $(BATCH),data/sample_transactions.csv)
+	$(PYTHON) src/models/train_supervised.py

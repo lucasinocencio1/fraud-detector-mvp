@@ -1,14 +1,12 @@
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
-
-from pydantic import DirectoryPath, Field
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class DataSettings(BaseSettings):
-    raw_data_dir: DirectoryPath = Field(default_factory=lambda: Path("data"))
-    artifacts_dir: DirectoryPath = Field(default_factory=lambda: Path("artifacts"))
+    raw_data_dir: Path = Field(default_factory=lambda: Path("data"))
+    artifacts_dir: Path = Field(default_factory=lambda: Path("artifacts"))
     batch_size: int = 50_000
     train_ratio: float = 0.7
     val_ratio: float = 0.15

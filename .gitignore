@@ -8,11 +8,11 @@ models/
 *.parquet
 *.pickle
 data/*.csv
-!data/sample_transactions.csv
 
 .env*
 
 .DS_Store
+**/.DS_Store
 *.log
 *.pyc
 *.json

@@ -29,10 +29,62 @@ def reset_settings(monkeypatch, tmp_path):
 def sample_batch() -> pd.DataFrame:
     return pd.DataFrame(
         [
-            {"time": 0, "amount": 120.5, "region": "US", "device_type": "mobile", "merchant_category": "electronics", "transaction_hour": 10, "is_weekend": 0, "avg_amount_user": 80.0, "amount_to_avg_ratio": 1.5, "tx_last_24h": 2, "tx_last_7d": 5, "class": 1},
-            {"time": 1, "amount": 45.0, "region": "EU", "device_type": "desktop", "merchant_category": "groceries", "transaction_hour": 14, "is_weekend": 0, "avg_amount_user": 55.0, "amount_to_avg_ratio": 0.82, "tx_last_24h": 1, "tx_last_7d": 4, "class": 0},
-            {"time": 2, "amount": 310.75, "region": "US", "device_type": "mobile", "merchant_category": "travel", "transaction_hour": 1, "is_weekend": 0, "avg_amount_user": 95.0, "amount_to_avg_ratio": 3.27, "tx_last_24h": 5, "tx_last_7d": 9, "class": 1},
-            {"time": 3, "amount": 25.1, "region": "BR", "device_type": "mobile", "merchant_category": "restaurants", "transaction_hour": 20, "is_weekend": 1, "avg_amount_user": 30.0, "amount_to_avg_ratio": 0.84, "tx_last_24h": 0, "tx_last_7d": 2, "class": 0},
+            {
+                "time": 0,
+                "amount": 120.5,
+                "region": "US",
+                "device_type": "mobile",
+                "merchant_category": "electronics",
+                "transaction_hour": 10,
+                "is_weekend": 0,
+                "avg_amount_user": 80.0,
+                "amount_to_avg_ratio": 1.5,
+                "tx_last_24h": 2,
+                "tx_last_7d": 5,
+                "class": 1,
+            },
+            {
+                "time": 1,
+                "amount": 45.0,
+                "region": "EU",
+                "device_type": "desktop",
+                "merchant_category": "groceries",
+                "transaction_hour": 14,
+                "is_weekend": 0,
+                "avg_amount_user": 55.0,
+                "amount_to_avg_ratio": 0.82,
+                "tx_last_24h": 1,
+                "tx_last_7d": 4,
+                "class": 0,
+            },
+            {
+                "time": 2,
+                "amount": 310.75,
+                "region": "US",
+                "device_type": "mobile",
+                "merchant_category": "travel",
+                "transaction_hour": 1,
+                "is_weekend": 0,
+                "avg_amount_user": 95.0,
+                "amount_to_avg_ratio": 3.27,
+                "tx_last_24h": 5,
+                "tx_last_7d": 9,
+                "class": 1,
+            },
+            {
+                "time": 3,
+                "amount": 25.1,
+                "region": "BR",
+                "device_type": "mobile",
+                "merchant_category": "restaurants",
+                "transaction_hour": 20,
+                "is_weekend": 1,
+                "avg_amount_user": 30.0,
+                "amount_to_avg_ratio": 0.84,
+                "tx_last_24h": 0,
+                "tx_last_7d": 2,
+                "class": 0,
+            },
         ]
     )
 
@@ -57,7 +109,12 @@ def test_split_and_feature_pipeline(tmp_path):
     assert (artifacts_dir / "train_feat.parquet").exists()
 
     for df in (train_feat, val_feat, test_feat):
-        assert {"region_amount_mean", "region_amount_std", "mc_amount_mean", "mc_amount_std"}.issubset(df.columns)
+        assert {
+            "region_amount_mean",
+            "region_amount_std",
+            "mc_amount_mean",
+            "mc_amount_std",
+        }.issubset(df.columns)
 
 
 def test_append_batch_requires_schema(tmp_path):

@@ -14,7 +14,9 @@ from src.data.validators import RAW_TRANSACTIONS_SCHEMA, validate
 logger = configure_logging(name="fraud_data.split")
 
 
-def time_split(df: pd.DataFrame, *, train_ratio: float, val_ratio: float, timestamp_column: str) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def time_split(
+    df: pd.DataFrame, *, train_ratio: float, val_ratio: float, timestamp_column: str
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     if not 0 < train_ratio < 1 or not 0 < val_ratio < 1:
         raise ValueError("train_ratio and val_ratio must be between 0 and 1")
     if train_ratio + val_ratio >= 1:
@@ -46,6 +48,4 @@ def run_split() -> None:
     write_parquet(val, Path(settings.artifacts_dir) / "val.parquet")
     write_parquet(test, Path(settings.artifacts_dir) / "test.parquet")
 
-    logger.info(
-        "Split data into train=%s, val=%s, test=%s", len(train), len(val), len(test)
-    )
+    logger.info("Split data into train=%s, val=%s, test=%s", len(train), len(val), len(test))

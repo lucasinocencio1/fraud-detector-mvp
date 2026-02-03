@@ -1,4 +1,5 @@
 import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.server.api.dependencies import require_api_key
@@ -32,7 +33,10 @@ def _predict(tx: TransactionIn) -> PredictionOut:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         logger.exception("Unexpected error during prediction: %s", exc)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Prediction failed") from exc
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Prediction failed",
+        ) from exc
 
 
 @router.post(

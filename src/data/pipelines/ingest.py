@@ -16,11 +16,7 @@ logger = configure_logging(name="fraud_data.ingest")
 def _ensure_transaction_id(df: pd.DataFrame, *, timestamp_column: str) -> pd.DataFrame:
     df = df.copy()
     if "transaction_id" not in df.columns:
-        df["transaction_id"] = (
-            df[timestamp_column].astype(str)
-            + "-"
-            + df.reset_index().index.astype(str)
-        )
+        df["transaction_id"] = df[timestamp_column].astype(str) + "-" + df.reset_index().index.astype(str)
     df["transaction_id"] = df["transaction_id"].astype(str)
     return df
 
@@ -47,5 +43,9 @@ def append_batch(batch: pd.DataFrame, *, destination: Optional[Path] = None) -> 
     combined = combined.drop_duplicates(subset=["transaction_id"]).sort_values(settings.timestamp_column)
 
     write_csv(combined, dest)
-    logger.info("Ingested batch with %s records. Total records: %s", len(validated_batch), len(combined))
+    logger.info(
+        "Ingested batch with %s records. Total records: %s",
+        len(validated_batch),
+        len(combined),
+    )
     return combined

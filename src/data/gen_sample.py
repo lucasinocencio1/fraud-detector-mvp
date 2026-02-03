@@ -15,7 +15,14 @@ from src.data.io import write_csv
 RNG = np.random.default_rng(42)
 REGIONS = ["EU", "US", "BR", "ASIA"]
 DEVICE_TYPES = ["mobile", "desktop"]
-MERCHANT_CATS = ["electronics", "groceries", "fashion", "gaming", "travel", "restaurants"]
+MERCHANT_CATS = [
+    "electronics",
+    "groceries",
+    "fashion",
+    "gaming",
+    "travel",
+    "restaurants",
+]
 
 
 def gen_transactions(
@@ -50,34 +57,38 @@ def gen_transactions(
     is_fraud = (RNG.random(n) < base).astype(int)
     transaction_id = [f"tx-{i}" for i in range(start_time, start_time + n)]
 
-    df = pd.DataFrame({
-        "transaction_id": transaction_id,
-        "time": time,
-        "amount": amount,
-        "region": region,
-        "device_type": device_type,
-        "merchant_category": merchant_category,
-        "transaction_hour": transaction_hour,
-        "is_weekend": is_weekend,
-        "avg_amount_user": avg_amount_user,
-        "amount_to_avg_ratio": amount_to_avg_ratio,
-        "tx_last_24h": tx_last_24h,
-        "tx_last_7d": tx_last_7d,
-        "class": is_fraud,
-    })
+    df = pd.DataFrame(
+        {
+            "transaction_id": transaction_id,
+            "time": time,
+            "amount": amount,
+            "region": region,
+            "device_type": device_type,
+            "merchant_category": merchant_category,
+            "transaction_hour": transaction_hour,
+            "is_weekend": is_weekend,
+            "avg_amount_user": avg_amount_user,
+            "amount_to_avg_ratio": amount_to_avg_ratio,
+            "tx_last_24h": tx_last_24h,
+            "tx_last_7d": tx_last_7d,
+            "class": is_fraud,
+        }
+    )
     return df
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate synthetic transaction dataset")
     parser.add_argument(
-        "-n", "--rows",
+        "-n",
+        "--rows",
         type=int,
         default=250_000,
         help="Number of rows to generate (default: 250000)",
     )
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         type=str,
         default=None,
         help="Output path (default: data/transactions.csv)",

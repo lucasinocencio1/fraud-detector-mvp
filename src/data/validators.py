@@ -2,7 +2,6 @@ from typing import Any
 
 from pandera import Column, DataFrameSchema
 
-
 RAW_TRANSACTIONS_SCHEMA = DataFrameSchema(
     {
         "transaction_id": Column(str, nullable=False),

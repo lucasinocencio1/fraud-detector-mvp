@@ -50,18 +50,10 @@ def ensure_base_features(df: pd.DataFrame) -> pd.DataFrame:
 
 def add_feature_aggregates(df: pd.DataFrame) -> pd.DataFrame:
     if "region" in df.columns and "Amount" in df.columns:
-        region_stats = (
-            df.groupby("region")["Amount"]
-            .agg(region_amount_mean="mean", region_amount_std="std")
-            .reset_index()
-        )
+        region_stats = df.groupby("region")["Amount"].agg(region_amount_mean="mean", region_amount_std="std").reset_index()
         df = df.merge(region_stats, on="region", how="left")
     if "merchant_category" in df.columns and "Amount" in df.columns:
-        mc_stats = (
-            df.groupby("merchant_category")["Amount"]
-            .agg(mc_amount_mean="mean", mc_amount_std="std")
-            .reset_index()
-        )
+        mc_stats = df.groupby("merchant_category")["Amount"].agg(mc_amount_mean="mean", mc_amount_std="std").reset_index()
         df = df.merge(mc_stats, on="merchant_category", how="left")
     return df
 

@@ -48,7 +48,10 @@ def build_parser() -> argparse.ArgumentParser:
     features_parser = subparsers.add_parser("features", help="Build feature artifacts")
     features_parser.set_defaults(func=cmd_features)
 
-    full_parser = subparsers.add_parser("full-run", help="Run split and feature pipeline, optionally ingesting a batch first")
+    full_parser = subparsers.add_parser(
+        "full-run",
+        help="Run split and feature pipeline, optionally ingesting a batch first",
+    )
     full_parser.add_argument("--batch-path", help="Optional raw batch CSV to ingest before running pipelines")
     full_parser.set_defaults(func=cmd_full_run)
 

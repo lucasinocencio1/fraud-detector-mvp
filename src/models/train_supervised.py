@@ -22,9 +22,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, OneHotEncoder
 from xgboost import XGBClassifier
 
-from src.models.features import (
-    CATEGORICAL_FEATURES,
+from src.utils.features import (
     BASE_FEATURES,
+    CATEGORICAL_FEATURES,
     enrich_features,
     ensure_base_features,
     normalize_columns,

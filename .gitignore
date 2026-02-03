@@ -11,8 +11,6 @@ data/*.csv
 
 .env*
 
-.DS_Store
-**/.DS_Store
 *.log
 *.pyc
 *.json
@@ -21,4 +19,5 @@ notebooks/data_exploration.ipynb
 .ipynb_checkpoints/
 
 .coverage
+coverage.xml
 htmlcov/

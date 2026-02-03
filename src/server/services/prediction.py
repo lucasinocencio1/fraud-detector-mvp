@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 import pandas as pd
 
-from src.models.features import ensure_base_features
+from src.utils.features import ensure_base_features
 from src.server.api.schemas import PredictionOut, TransactionIn
 from src.server.loader import get_artifacts
 

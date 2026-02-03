@@ -1,9 +1,11 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TransactionIn(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
     Amount: float = Field(ge=0)
     transaction_hour: int = Field(ge=0, le=23)
     region: str
@@ -14,9 +16,6 @@ class TransactionIn(BaseModel):
     amount_to_avg_ratio: float = 0.0
     tx_last_24h: int = 0
     tx_last_7d: int = 0
-
-    class Config:
-        extra = "ignore"
 
 
 class PredictionOut(BaseModel):

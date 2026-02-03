@@ -183,15 +183,15 @@ pipeline.fit(X_tr, y_tr)
 
 
 def find_optimal_threshold(y_true, y_pred_proba, cost_fp=1, cost_fn=10):
+    if len(np.unique(y_true)) < 2:
+        return 0.5, float("inf")
     thresholds = np.linspace(0.01, 0.99, 100)
     costs = []
-
     for thresh in thresholds:
         y_pred = (y_pred_proba >= thresh).astype(int)
-        tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+        tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
         cost = (fp * cost_fp) + (fn * cost_fn)
         costs.append(cost)
-
     optimal_idx = int(np.argmin(costs))
     return float(thresholds[optimal_idx]), float(costs[optimal_idx])
 

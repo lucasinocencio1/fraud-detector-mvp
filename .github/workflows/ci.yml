@@ -9,6 +9,7 @@ on:
 
 env:
   PYTHONPATH: ${{ github.workspace }}
+  DISABLE_PANDERA_IMPORT_WARNING: "1"
 
 jobs:
   lint:
@@ -37,7 +38,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Verify project loads
-        run: python -c "import src.server.app; import src.data.cli"
+        run: python -c "import src.server.app; import src.data.cli; import src.models.features"
   
   test:
     name: Tests (Python ${{ matrix.python-version }})

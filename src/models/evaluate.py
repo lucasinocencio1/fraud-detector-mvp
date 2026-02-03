@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import auc, average_precision_score, precision_recall_curve, roc_auc_score
 
+from src.models.features import ensure_base_features, normalize_columns
 from src.utils.metrics import auprc as calc_auprc
 from src.utils.metrics import precision_at_k
 from src.utils.psi import psi
@@ -17,21 +18,6 @@ METRICS_PATH = ARTIFACTS_DIR / "metrics.json"
 TRAIN_FEAT_PATH = ARTIFACTS_DIR / "train_feat.parquet"
 VAL_FEAT_PATH = ARTIFACTS_DIR / "val_feat.parquet"
 
-BASE_FEATURES = [
-    "Amount",
-    "transaction_hour",
-    "region",
-    "device_type",
-    "merchant_category",
-    "is_weekend",
-    "avg_amount_user",
-    "amount_to_avg_ratio",
-    "tx_last_24h",
-    "tx_last_7d",
-]
-
-CATEGORICAL_FEATURES = ["region", "device_type", "merchant_category"]
-
 PSI_NUMERIC_FEATURES = [
     "Amount",
     "transaction_hour",
@@ -40,26 +26,6 @@ PSI_NUMERIC_FEATURES = [
     "tx_last_24h",
     "tx_last_7d",
 ]
-
-
-def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
-    if "amount" in df.columns and "Amount" not in df.columns:
-        df = df.rename(columns={"amount": "Amount"})
-    if "class" in df.columns and "Class" not in df.columns:
-        df = df.rename(columns={"class": "Class"})
-    return df
-
-
-def ensure_base_features(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
-    for col in BASE_FEATURES:
-        if col not in df.columns:
-            if col in CATEGORICAL_FEATURES:
-                df[col] = "unknown"
-            else:
-                df[col] = 0.0
-    return df[BASE_FEATURES]
 
 
 # 1. Load artifacts and validation data
@@ -90,9 +56,18 @@ scores = pipeline.predict_proba(val_features)[:, 1]
 
 prec, rec, _ = precision_recall_curve(y_val, scores)
 pr_auc = auc(rec, prec)
-avg_prec = average_precision_score(y_val, scores)
-roc_auc = roc_auc_score(y_val, scores)
-auprc_score = calc_auprc(y_val, scores)
+try:
+    avg_prec = average_precision_score(y_val, scores)
+except ValueError:
+    avg_prec = 0.0
+try:
+    roc_auc = roc_auc_score(y_val, scores)
+except ValueError:
+    roc_auc = 0.0
+try:
+    auprc_score = calc_auprc(y_val, scores)
+except ValueError:
+    auprc_score = 0.0
 precision_at_1pct = precision_at_k(y_val, scores, k=0.01)
 
 # 4. Save metrics

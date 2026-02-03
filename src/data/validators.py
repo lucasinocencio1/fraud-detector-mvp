@@ -1,6 +1,7 @@
 from typing import Any
 
-from pandera import Column, DataFrameSchema
+from pandera.api.pandas.components import Column
+from pandera.api.pandas.container import DataFrameSchema
 
 RAW_TRANSACTIONS_SCHEMA = DataFrameSchema(
     {

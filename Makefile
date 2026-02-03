@@ -1,4 +1,5 @@
 export PYTHONPATH := $(shell pwd)
+export DISABLE_PANDERA_IMPORT_WARNING := 1
 PYTHON := python3
 
 .PHONY: setup generate ingest data features train_sup evaluate test serve retrain

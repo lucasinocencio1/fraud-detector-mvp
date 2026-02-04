@@ -1,3 +1,7 @@
-[tool.isort]
-profile = "black"
-line_length = 127
+[project]
+name = "Fraud-detector"
+version = "1.0"
+description = "An open source fraud detection stack built with FastAPI and XGBoost."
+authors = [
+  { name = "Lucas Inocenio" }
+]

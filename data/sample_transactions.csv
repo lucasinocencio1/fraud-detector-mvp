@@ -1,6 +1,0 @@
-transaction_id,time,amount,region,device_type,merchant_category,transaction_hour,is_weekend,avg_amount_user,amount_to_avg_ratio,tx_last_24h,tx_last_7d,class
-t1,0,120.5,US,mobile,electronics,10,0,80,1.5,2,5,1
-t2,1,45.0,EU,desktop,groceries,14,0,55,0.82,1,4,0
-t3,2,310.0,US,mobile,travel,1,0,95,3.27,5,9,1
-t4,3,25.0,BR,mobile,restaurants,20,1,30,0.84,0,2,0
-t5,4,78.0,EU,desktop,electronics,8,0,60,1.3,3,7,0
